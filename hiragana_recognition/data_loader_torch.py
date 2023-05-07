@@ -2,13 +2,21 @@ import matplotlib.pyplot as plt
 import os
 import torch
 from torchvision import datasets, transforms
-from torch.utils.data import Dataset, DataLoader
+
 import glob
 from PIL import Image
 import re
 import numpy as np
 
+from hiragana_recognition import model, utils
 
+
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device
+
+transform = transforms.Compose(
+    [transforms.ToTensor(),
+     transforms.Normalize((0.5, ), (0.5, ))])
 
 def get_class_name(file_loc):
     name = os.path.split(file_loc)[1]
@@ -23,13 +31,6 @@ def get_class_names(data_list):
         class_names.add(lbl)
     return class_names
 
-
-def encode_labels(path):
-    name = get_class_name(path)
-    encoding = [True if name == c else False for c in class_names]
-    return tf.argmax(encoding)
-
-
 class CustomDataset(Dataset):
     def __init__(self):
         self.imgs_path = "data/"
@@ -43,7 +44,6 @@ class CustomDataset(Dataset):
                 self.data.append([img_path, class_name])
         self.img_dim = (84, 83)
         self.class_names = list(class_names)
-        print(self.data)
 
     def __len__(self):
         return len(self.data)
@@ -51,11 +51,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         img_path, class_name = self.data[idx]
         img = np.array(Image.open(img_path))
-        class_id = [True if class_name == c else False for c in self.class_names]
-        img_tensor = torch.from_numpy(img)
+        img = transform(img)
+        class_id = [self.class_names.index(class_name)]
         class_id = torch.tensor([class_id])
-        return img_tensor, class_id
-
-
-data = CustomDataset()
-data.__getitem__(0)
+        return img, class_id, class_name
