@@ -4,13 +4,18 @@ const submitBtn = document.getElementById('submitBtn');
 const clearBtn = document.getElementById('clearBtn');
 const predictionDiv = document.getElementById('prediction');
 
-// WIP: this dict is incomplete
-const hiragana = {
-    0: 'あ',
-    1: 'い',
-    2: 'う',
-    9: 'を'
 
+const hiragana = {
+    0: "お",
+    1: "き",
+    2: "す",
+    3: "つ",
+    4: "な",
+    5: "は",
+    6: "ま",
+    7: "や",
+    8: "れ",
+    9: "を"
 };
 
 
@@ -23,7 +28,7 @@ canvas.addEventListener('mousedown', () => {
 
 canvas.addEventListener('mousemove', (event) => {
     if (!isDrawing) return;
-    context.lineWidth = 5;
+    context.lineWidth = 10;
     context.lineCap = 'round';
     context.strokeStyle = 'black';
     context.lineTo(event.clientX - canvas.offsetLeft, event.clientY - canvas.offsetTop);
@@ -44,7 +49,7 @@ submitBtn.addEventListener('click', async () => {
     const imageData = canvas.toDataURL('image/png');
     const link = document.createElement('a');
     link.href = imageData;
-    link.download = 'drawing.png'; // save image to check whats being sent 
+    //link.download = 'drawing.png'; // save image to check whats being sent
     link.click();
     const response = await fetch('http://localhost:8000/predict', {
         method: 'POST',
@@ -54,8 +59,10 @@ submitBtn.addEventListener('click', async () => {
         }
     });
     const result = await response.json();
-    const predictedCharacter = hiragana[result];
-    predictionDiv.textContent = 'Prediction: ${predictedCharacter}';
+
+    const predictedCharacter = hiragana[result["prediction"]];
+    console.log("Result isssssssssssssssssss:", predictedCharacter);
+    predictionDiv.textContent = `Prediction: ${predictedCharacter}`;
 
 
 });

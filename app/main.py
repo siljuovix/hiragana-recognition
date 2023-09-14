@@ -29,7 +29,7 @@ def process_image(image):
     transform = transforms.Compose([transforms.ToTensor(), transforms.Grayscale(num_output_channels=1), transforms.Normalize((0.5, ), (0.5, ))])
     image = image.resize((28, 28), Image.Resampling.LANCZOS)
     image = PIL.ImageOps.invert(image)
-    image.save("input_image.jpeg") # WIP: fix image
+    image.save("input_image.jpeg")
     image = transform(image).float()
     return image
 
@@ -44,11 +44,10 @@ async def predict(image_data: ImageData):
         image = Image.open(io.BytesIO(decoded_image))
         print("Image Mode:", image.mode)
         if image.mode == "RGBA":
-            image = image.convert("RGB")
-        image_tensor = process_image(image)
-        print(image_tensor.shape)
+            background = Image.new("RGB", image.size, (255, 255, 255))
+            background.paste(image, (0, 0), image)
+        image_tensor = process_image(background)
         predicted = prediction.inference(image_tensor)
-        print(type(predicted.item()))
 
         response = {"prediction": predicted.item()}
         print(response)
